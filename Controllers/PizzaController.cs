@@ -9,10 +9,19 @@ namespace la_mia_pizzeria_static.Controllers
 {
     public class PizzaController : Controller
     {
-        public IActionResult Index()
+        PizzeriaDbContext db;
+
+        public PizzaController() : base()
         {
             // Usiamo Data quindi DB
-            PizzeriaDbContext db = new PizzeriaDbContext();
+            // Metodo mostrato da Paolo per dichiarare soltanto una volta il nostro DB anziché di volta in volta 
+            db = new PizzeriaDbContext();
+        }
+        //Read 
+        public IActionResult Index()
+        {
+            // Usiamo Data quindi DB . Metodo Vecchio dove bisognava dichiarare di volta in volta il db in uso
+            //PizzeriaDbContext db = new PizzeriaDbContext();
 
 
             // Usiamo Model
@@ -26,11 +35,35 @@ namespace la_mia_pizzeria_static.Controllers
         public IActionResult Detail(int id)
         {
 
-            PizzeriaDbContext db = new PizzeriaDbContext();
 
             Pizza Pizzas = db.Pizzas.Where(p => p.Id == id).FirstOrDefault();
 
             return View(Pizzas);
+        }
+
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost] // Equivalente di CSRF di Laravel
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(Pizza Pizzas)
+        {
+            if (!ModelState.IsValid)
+            {
+                //return View(post);
+                return View();
+            }
+
+            // Pusha nel db con .add
+            db.Pizzas.Add(Pizzas);
+            //Salva i cambiamenti effettuati
+            db.SaveChanges();
+
+
+            //Redirect alla Index quindi alla lista di pizze creata
+            return RedirectToAction("Index");
         }
     }
 }
